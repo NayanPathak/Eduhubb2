@@ -9,7 +9,8 @@ Use this prompt to generate the complete Angular frontend for the **EduHub** app
 1. **Angular version:** Angular 16, **class-based components only** (no standalone/functional components, no signals-based syntax).
 2. **Forms:** **Template-driven forms only** (`FormsModule`, `ngModel`, `#form="ngForm"`). Do **NOT** use Reactive Forms (`FormGroup`, `FormBuilder`, `formControlName`).
 3. **Styling:** Tailwind CSS **v3.4.17** only. No Bootstrap, no Angular Material, no inline `<style>` blocks unless unavoidable.
-4. **File structure per component:** Every component must have **3 separate files**: `component-name.component.ts`, `component-name.component.html`, `component-name.component.css` (or scss, kept minimal since Tailwind handles styling). **Do not use inline templates or inline styles** (`template:` / `styles:` inside the `@Component` decorator is forbidden).
+4. **File structure per component:** Every component must have **3 separate files**: `component-name.component.ts`, `component-name.component.html`, `component-name.component.css` (or scss, kept minimal since Tailwind handles styling). **Do not use inline templates or inline styles** (`template:` / `styles:` inside the `@Component` decorator is forbidden). Exception: `authguard` is a route guard class (`CanActivate`), not a UI component — it lives in `src/app/components/authguard/` per the required folder tree, but only has a single `.ts` file (no `.html`/`.css`, no `@Component` decorator, not declared in `app.module.ts` declarations — only provided/used in routing).
+11. **Component names/folders are FROZEN and must match exactly** (see Section 3): `adminnav`, `adminviewfeedback`, `authguard`, `educatoraddcourse`, `educatoraddmeterial` *(spelled exactly this way — do not "correct" to `educatoraddmaterial`)*, `educatoreditcourse`, `educatorviewcourse`, `enrollmentlist`, `error`, `home`, `login`, `mycourse`, `navbar`, `registration`, `studentviewcourse`, `useraddfeedback`, `usernav`, `userviewfeedback`. Do not rename, merge, split, or add extra components beyond this list.
 5. **Models are FROZEN.** Use the following model files exactly as given below, with **exact property names and casing**. Do not rename, re-case, add, or remove any property (e.g., `CourseId` must remain `CourseId`, not `courseId` or `course_id`). Every component/service must bind to these exact property names in both TypeScript and HTML (e.g., `course.CourseId`, `[(ngModel)]="course.Title"`).
 6. Do not modify `course.model.ts`, `enrollment.model.ts`, `feedback.model.ts`, `login.model.ts`, `material.model.ts`, `user.model.ts` — treat them as already final and existing in `src/app/models/`.
 7. Angular app runs on **port 8081**; backend (.NET) runs on **port 8080**. Base API URL: `http://localhost:8080`.
@@ -153,59 +154,76 @@ src/app/
     enrollment.service.ts
     material.service.ts
     feedback.service.ts
-    token.service.ts        (optional helper for localStorage token/role/userId access)
-  guards/
-    auth.guard.ts
   interceptors/
     auth.interceptor.ts
   components/
-    login/
-      login.component.ts
-      login.component.html
-      login.component.css
-    register/
-      register.component.ts / .html / .css
-    navbar/
-      navbar.component.ts / .html / .css
+    adminnav/
+      adminnav.component.ts / .html / .css
+    adminviewfeedback/
+      adminviewfeedback.component.ts / .html / .css
+    authguard/
+      authguard.ts                       (CanActivate guard class only — no .html/.css)
+    educatoraddcourse/
+      educatoraddcourse.component.ts / .html / .css
+    educatoraddmeterial/
+      educatoraddmeterial.component.ts / .html / .css
+    educatoreditcourse/
+      educatoreditcourse.component.ts / .html / .css
+    educatorviewcourse/
+      educatorviewcourse.component.ts / .html / .css
+    enrollmentlist/
+      enrollmentlist.component.ts / .html / .css
+    error/
+      error.component.ts / .html / .css
     home/
       home.component.ts / .html / .css
-    educator-course-list/
-      educator-course-list.component.ts / .html / .css
-    course-form/                (add/edit course - shared or separate add/edit)
-      course-form.component.ts / .html / .css
-    course-enrollments/
-      course-enrollments.component.ts / .html / .css
-    course-materials/
-      course-materials.component.ts / .html / .css
-    educator-feedback-list/
-      educator-feedback-list.component.ts / .html / .css
-    studentviewcourse/            (id required by SRS – do not rename)
+    login/
+      login.component.ts / .html / .css
+    mycourse/
+      mycourse.component.ts / .html / .css
+    navbar/
+      navbar.component.ts / .html / .css
+    registration/
+      registration.component.ts / .html / .css
+    studentviewcourse/
       studentviewcourse.component.ts / .html / .css
-    student-enrolled-courses/
-      student-enrolled-courses.component.ts / .html / .css
-    student-course-materials/
-      student-course-materials.component.ts / .html / .css
-    student-feedback/
-      student-feedback.component.ts / .html / .css
-    error-page/
-      error-page.component.ts / .html / .css
+    useraddfeedback/
+      useraddfeedback.component.ts / .html / .css
+    usernav/
+      usernav.component.ts / .html / .css
+    userviewfeedback/
+      userviewfeedback.component.ts / .html / .css
   app-routing.module.ts
   app.module.ts
   app.component.ts / .html / .css
 ```
 
+**Exact component list (do not deviate):** `adminnav`, `adminviewfeedback`, `authguard`, `educatoraddcourse`, `educatoraddmeterial`, `educatoreditcourse`, `educatorviewcourse`, `enrollmentlist`, `error`, `home`, `login`, `mycourse`, `navbar`, `registration`, `studentviewcourse`, `useraddfeedback`, `usernav`, `userviewfeedback`.
+
 ---
 
 ## 4. Routing & Guards
 
-- `''` and `'login'` → `LoginComponent` (default/landing route)
-- `'register'` → `RegisterComponent`
-- `'home'` → `HomeComponent` (protected)
-- Educator routes (protected + role check for Educator): course list/create/edit, view enrollments per course, upload materials, view feedback list.
-- Student routes (protected + role check for Student): `studentviewcourse` (browse + enroll), enrolled courses, course materials, feedback (view/post).
-- `'**'` → `ErrorPageComponent`
+- `''` and `'login'` → `LoginComponent`
+- `'registration'` → `RegistrationComponent`
+- `'home'` → `HomeComponent` (protected by `authguard`)
+- Educator routes (protected by `authguard` + role check for Educator):
+  - `educatorviewcourse` → list all courses
+  - `educatoraddcourse` → add course form
+  - `educatoreditcourse/:id` → edit course form
+  - `enrollmentlist` (optionally `enrollmentlist/:courseId`) → view/manage enrollments
+  - `educatoraddmeterial` (optionally `educatoraddmeterial/:courseId`) → upload course materials
+  - `adminviewfeedback` → view all student feedback
+- Student routes (protected by `authguard` + role check for Student):
+  - `studentviewcourse` → browse all courses + enroll
+  - `mycourse` → view own enrolled courses (and their materials)
+  - `useraddfeedback` → submit feedback
+  - `userviewfeedback` → view/delete own submitted feedback
+- `'**'` → `ErrorComponent`
 
-`AuthGuard` (`CanActivate`):
+`NavbarComponent` acts as a thin host that renders `<app-adminnav>` for Educators and `<app-usernav>` for Students based on the role stored in `localStorage`.
+
+`authguard` (`CanActivate`, defined in `src/app/components/authguard/authguard.ts`):
 - Reads token from `localStorage`.
 - If no token → redirect to `/login`.
 - Optionally validate role against route data (`route.data['role']`) and redirect to an error/forbidden view if mismatched.
@@ -265,33 +283,41 @@ For **each** component below, generate:
 - Tailwind utility classes for all layout/styling (cards, tables, buttons, navbar, forms, alerts).
 - Inline validation messages shown conditionally via `*ngIf="field.invalid && field.touched"`.
 
-1. **LoginComponent** – email + password template-driven form; on submit calls `AuthService.login`; on success routes to `/home` based on role; shows "Invalid email"/"Invalid password" server errors.
+1. **login** – email + password template-driven form; on submit calls `AuthService.login`; on success routes to `/home` based on role; shows "Invalid email"/"Invalid password" server errors.
 
-2. **RegisterComponent** – username, email, mobile number, password, role select (Educator/Student); on submit calls `AuthService.register`; on success redirect to login with success message.
+2. **registration** – username, email, mobile number, password, role select (Educator/Student); on submit calls `AuthService.register`; on success redirect to login with success message.
 
-3. **NavbarComponent** – shows different links depending on role (Educator: Courses, Enrollments, Feedback; Student: Courses, Enrolled Courses, Feedback). Hovering "Courses" reveals a submenu with **"View Courses"** (required id per SRS). Includes Logout button.
+3. **navbar** – host component that conditionally renders `<app-adminnav>` (role = Educator) or `<app-usernav>` (role = Student) based on the role stored in `localStorage`. Contains the Logout action (or delegates it to the child nav).
 
-4. **HomeComponent** – landing dashboard after login, simple welcome content, differs slightly per role (optional).
+4. **adminnav** – Educator's navigation links: Courses (→ `educatorviewcourse`), Enrollments (→ `enrollmentlist`), Feedback (→ `adminviewfeedback`), Logout.
 
-5. **EducatorCourseListComponent** – lists all courses (`getAllCourses`), with Edit/Delete actions and a link to add a new course; delete confirmation before calling `deleteCourse`.
+5. **usernav** – Student's navigation links: Courses (submenu on hover with **"View Courses"** → `studentviewcourse`, per SRS), My Course (→ `mycourse`), Feedback (→ `useraddfeedback` / `userviewfeedback`), Logout.
 
-6. **CourseFormComponent** – template-driven form for Title, Description, CourseStartDate, CourseEndDate, Category, Level; reused for both Add (`addCourse`) and Edit (`updateCourse`) via a route param check.
+6. **home** – landing dashboard after login; simple welcome content, can differ slightly per role.
 
-7. **CourseEnrollmentsComponent** – for a given `CourseId`, lists enrollments (`getEnrollmentsByCourse`) with student info and status (Accepted/Rejected/Pending); allow educator to update status via `updateEnrollmentStatus`.
+7. **authguard** – `CanActivate` guard class (no template). Reads the JWT from `localStorage`; redirects to `/login` if missing; optionally checks `route.data['role']` against the stored role and redirects to the error page on mismatch.
 
-8. **CourseMaterialsComponent** (educator side) – lists materials for a course (`getMaterialsByCourseId`), form to add a new material (Title, Description, URL, ContentType), and delete action (`deleteMaterial`).
+8. **educatorviewcourse** – lists all courses (`getAllCourses`) for the educator, with links/buttons to `educatoraddcourse`, `educatoreditcourse/:id`, and delete (`deleteCourse`, with confirmation).
 
-9. **EducatorFeedbackListComponent** – lists all feedback (`getFeedbacks`), read-only view for educators.
+9. **educatoraddcourse** – template-driven form (Title, Description, CourseStartDate, CourseEndDate, Category, Level) calling `addCourse`.
 
-10. **StudentviewcourseComponent** *(id must remain exactly `studentviewcourse` per SRS)* – lists all available courses for students to browse; enroll button calls `enrollCourse`.
+10. **educatoreditcourse** – template-driven form pre-populated via `getCourseById`, submitting through `updateCourse`.
 
-11. **StudentEnrolledCoursesComponent** – lists the logged-in student's enrollments (`getEnrolledCourses`), with unenroll action (`unenrollCourse`) and status display.
+11. **enrollmentlist** – lists enrollments (`getAllEnrollments` and/or `getEnrollmentsByCourse`) with student info and status (Accepted/Rejected/Pending); lets the educator update status via `updateEnrollmentStatus`.
 
-12. **StudentCourseMaterialsComponent** – shows materials for a course the student is enrolled in (`getMaterialsByCourseId`), read-only.
+12. **educatoraddmeterial** – lists materials for a course (`getMaterialsByCourseId`), template-driven form to add a new material (Title, Description, URL, ContentType) via `addMaterial`, and delete action (`deleteMaterial`).
 
-13. **StudentFeedbackComponent** – template-driven form to submit feedback (`sendFeedback`); list of own past feedback (`getAllFeedbacksByUserId`) with delete option (`deleteFeedback`).
+13. **adminviewfeedback** – lists all feedback (`getFeedbacks`), read-only view for educators.
 
-14. **ErrorPageComponent** – generic 404/500-style fallback page with a friendly message and a link back to `/home`.
+14. **studentviewcourse** *(name is frozen per SRS)* – lists all available courses for students to browse; enroll button calls `enrollCourse`.
+
+15. **mycourse** – lists the logged-in student's enrollments (`getEnrolledCourses`), including status, unenroll action (`unenrollCourse`), and the materials for each enrolled course (`getMaterialsByCourseId`, read-only).
+
+16. **useraddfeedback** – template-driven form to submit feedback (`sendFeedback`).
+
+17. **userviewfeedback** – lists the student's own past feedback (`getAllFeedbacksByUserId`) with a delete option (`deleteFeedback`).
+
+18. **error** – generic 404/500-style fallback page with a friendly message and a link back to `/home`.
 
 ---
 
@@ -308,11 +334,12 @@ For **each** component below, generate:
 
 ## 8. Deliverable Checklist
 
-- [ ] `app.module.ts` imports `FormsModule`, `HttpClientModule`, registers `AuthInterceptor`, declares all components.
-- [ ] `app-routing.module.ts` with guarded routes as described.
+- [ ] `app.module.ts` imports `FormsModule`, `HttpClientModule`, registers `AuthInterceptor`, declares all UI components (not `authguard`, which is a provider, not a declared component).
+- [ ] `app-routing.module.ts` with guarded routes as described, using `authguard` as `canActivate`.
 - [ ] All services under `src/app/services/` matching method signatures above exactly.
-- [ ] `auth.guard.ts` under `src/app/guards/`.
+- [ ] `authguard.ts` under `src/app/components/authguard/` (no `.html`/`.css`).
 - [ ] `auth.interceptor.ts` under `src/app/interceptors/`.
-- [ ] Every component has 3 separate files (ts/html/css), class-based, template-driven forms only.
+- [ ] Every component listed in Section 3 exists with exactly that name/folder, each with 3 separate files (ts/html/css) except `authguard`; class-based, template-driven forms only.
 - [ ] Tailwind 3.4.17 configured and used exclusively for styling.
 - [ ] No property names renamed anywhere — verify against Section 1 before finalizing.
+- [ ] No component renamed, merged, or added beyond the frozen list in Section 3.
