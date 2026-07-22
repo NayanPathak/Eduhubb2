@@ -1,0 +1,76 @@
+course.model.ts -
+export interface Course {
+    CourseId?: number;
+    Title: string;
+    Description: string;
+    CourseStartDate: string;
+    CourseEndDate: string;
+    Category: string;
+    Level: string;
+  }
+
+enrollemnt.model.ts
+import { Course } from "./course.model";
+import { User } from "./user.model";
+
+export interface Enrollment {
+    EnrollmentId ?: number;
+    UserId: number;
+    User?: User;
+    CourseId: number;
+    Course: Course;
+    EnrollmentDate: string;
+    Status: string;
+}
+
+feedback.model.ts
+export class Feedback {
+    FeedbackId?: number;
+    UserId!: number;
+    FeedbackText!: string;
+    Date!: string;
+  }
+
+login.model.ts
+
+export class Login {
+  Email!: string;
+  Password!: string;
+}
+export interface LoginResponse {
+  token: string;
+  role: 'Educator' | 'Student';
+  UserId: number;
+}
+material.model.ts
+
+export interface Material {
+    MaterialId?: number;
+    CourseId?: number;
+    Title: string;
+    Description: string;
+    URL: string;
+    UploadDate: string;
+    ContentType: string;
+  } 
+
+export class User {
+  UserId?: number;
+  Email!: string;
+  Password!: string;
+  Username!: string;
+  MobileNumber!: string;
+  UserRole!: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  mobileNumber: string;
+  password: string;
+  userRole: 'Educator' | 'Student';
+}
+
+export interface RegisterResponse {
+  message: string;
+}
